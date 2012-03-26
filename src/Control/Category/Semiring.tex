@@ -1,0 +1,1444 @@
+\documentclass{article}
+\usepackage{fge}
+\usepackage{mathabx}
+\usepackage{hyperref}
+\usepackage{marvosym}
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{0.66084ex}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+%
+%
+%
+%
+%
+% This package provides two environments suitable to take the place
+% of hscode, called "plainhscode" and "arrayhscode". 
+%
+% The plain environment surrounds each code block by vertical space,
+% and it uses \abovedisplayskip and \belowdisplayskip to get spacing
+% similar to formulas. Note that if these dimensions are changed,
+% the spacing around displayed math formulas changes as well.
+% All code is indented using \leftskip.
+%
+% Changed 19.08.2004 to reflect changes in colorcode. Should work with
+% CodeGroup.sty.
+%
+\ReadOnlyOnce{polycode.fmt}%
+\makeatletter
+
+\newcommand{\hsnewpar}[1]%
+  {{\parskip=0pt\parindent=0pt\par\vskip #1\noindent}}
+
+% can be used, for instance, to redefine the code size, by setting the
+% command to \small or something alike
+\newcommand{\hscodestyle}{}
+
+% The command \sethscode can be used to switch the code formatting
+% behaviour by mapping the hscode environment in the subst directive
+% to a new LaTeX environment.
+
+\newcommand{\sethscode}[1]%
+  {\expandafter\let\expandafter\hscode\csname #1\endcsname
+   \expandafter\let\expandafter\endhscode\csname end#1\endcsname}
+
+% "compatibility" mode restores the non-polycode.fmt layout.
+
+\newenvironment{compathscode}%
+  {\par\noindent
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed\)%
+   \par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\compaths}{\sethscode{compathscode}}
+
+% "plain" mode is the proposed default.
+% It should now work with \centering.
+% This required some changes. The old version
+% is still available for reference as oldplainhscode.
+
+\newenvironment{plainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newenvironment{oldplainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+% Here, we make plainhscode the default environment.
+
+\newcommand{\plainhs}{\sethscode{plainhscode}}
+\newcommand{\oldplainhs}{\sethscode{oldplainhscode}}
+\plainhs
+
+% The arrayhscode is like plain, but makes use of polytable's
+% parray environment which disallows page breaks in code blocks.
+
+\newenvironment{arrayhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\parray}%
+  {\endparray\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newcommand{\arrayhs}{\sethscode{arrayhscode}}
+
+% The mathhscode environment also makes use of polytable's parray 
+% environment. It is supposed to be used only inside math mode 
+% (I used it to typeset the type rules in my thesis).
+
+\newenvironment{mathhscode}%
+  {\parray}{\endparray}
+
+\newcommand{\mathhs}{\sethscode{mathhscode}}
+
+% texths is similar to mathhs, but works in text mode.
+
+\newenvironment{texthscode}%
+  {\(\parray}{\endparray\)}
+
+\newcommand{\texths}{\sethscode{texthscode}}
+
+% The framed environment places code in a framed box.
+
+\def\codeframewidth{\arrayrulewidth}
+\RequirePackage{calc}
+
+\newenvironment{framedhscode}%
+  {\parskip=\abovedisplayskip\par\noindent
+   \hscodestyle
+   \arrayrulewidth=\codeframewidth
+   \tabular{@{}|p{\linewidth-2\arraycolsep-2\arrayrulewidth-2pt}|@{}}%
+   \hline\framedhslinecorrect\\{-1.5ex}%
+   \let\endoflinesave=\\
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \framedhslinecorrect\endoflinesave{.5ex}\hline
+   \endtabular
+   \parskip=\belowdisplayskip\par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\framedhslinecorrect}[2]%
+  {#1[#2]}
+
+\newcommand{\framedhs}{\sethscode{framedhscode}}
+
+% The inlinehscode environment is an experimental environment
+% that can be used to typeset displayed code inline.
+
+\newenvironment{inlinehscode}%
+  {\(\def\column##1##2{}%
+   \let\>\undefined\let\<\undefined\let\\\undefined
+   \newcommand\>[1][]{}\newcommand\<[1][]{}\newcommand\\[1][]{}%
+   \def\fromto##1##2##3{##3}%
+   \def\nextline{}}{\) }%
+
+\newcommand{\inlinehs}{\sethscode{inlinehscode}}
+
+% The joincode environment is a separate environment that
+% can be used to surround and thereby connect multiple code
+% blocks.
+
+\newenvironment{joincode}%
+  {\let\orighscode=\hscode
+   \let\origendhscode=\endhscode
+   \def\endhscode{\def\hscode{\endgroup\def\@currenvir{hscode}\\}\begingroup}
+   %\let\SaveRestoreHook=\empty
+   %\let\ColumnHook=\empty
+   %\let\resethooks=\empty
+   \orighscode\def\hscode{\endgroup\def\@currenvir{hscode}}}%
+  {\origendhscode
+   \global\let\hscode=\orighscode
+   \global\let\endhscode=\origendhscode}%
+
+\makeatother
+\EndFmtInput
+%
+\begin{document}
+
+\title{Building a Better Arrow}
+\author{Jonathan Fischoff}
+\maketitle    
+    
+The great thing about {\tt Arrows} is you can write code that works for morphisms in different categories. For example, you can write code for functions and later use monad actions, or Kleisli arrows, instead. This is useful for error handling, and of course, adding {\tt IO}.
+
+If the underlying category only uses isomorphisms (things with inverses) then it is called a {\sl groupoid}. Groupoids cause cracks to show in the {\tt Arrow} abstraction. {\tt Arrow} assumes that you can lift any function into the category you are writing code for, by requiring a definition for \text{\tt arr~\char58{}\char58{}~\char40{}b~\char45{}\char62{}~c\char41{}~\char45{}\char62{}~a~b~c} function. This is out for groupoids, because not all functions are isomorphisms. 
+
+To remedy this, among other issues, Adam Megacz came up with. \href{http://arxiv.org/pdf/1007.2885v2.pdf}{Generalized Arrows.}. 
+
+In \href{https://www.cs.indiana.edu/~rpjames/papers/rc.pdf}{\sl Dagger Traced Symmetric Monoidal Categories and Reversible Programming} the authors show how to construct an reversible language out of the sum and product types along with related combinators to form a commutative semiring, at the type level. Both approaches are similar.
+\vskip 6pt
+Error handling and \href{http://www.informatik.uni-marburg.de/~rendel/rendel10invertible.pdf}{\sl partial isomorphisms} are possible with Generalized Arrows. However, I find the algebraic approach of {\sl DTSMCRP} more elegant. So I am going to try to get the same combinators as {\sl DTSMCRP} but for an arbitrary category, as I would with Generalized Arrows. 
+
+This is a Literate Haskell file, which means it can be executed as Haskell code. First, I need to start with a simple Haskell preamble. 
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mbox{\enskip\{-\# LANGUAGE   MultiParamTypeClasses 
+             , FunctionalDependencies
+             , TypeOperators
+             , TypeSynonymInstances
+             , UndecidableInstances
+             , FlexibleInstances
+             , FlexibleContexts
+              \#-\}\enskip}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{module}\;\Conid{\Conid{Data}.Semiring}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{Prelude}\;\Varid{hiding}\;((\mathbin{\circ}),\Varid{id}){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Control}.Category}\;((\mathbin{\circ}),\Varid{id},\Conid{Category}\;(\mathinner{\ldotp\ldotp})){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Data}.Void}\;(\Conid{Void}\;(\mathinner{\ldotp\ldotp})){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Control}.Arrow}\;(\Conid{Kleisli}\;(\mathinner{\ldotp\ldotp})){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Generics}.\Conid{Pointless}.MonadCombinators}\;(\Varid{mfuse}){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Control}.Monad}\;(\Varid{liftM},\Varid{liftM2}){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Varid{qualified}\;\Conid{\Conid{Data}.Groupoid}\;\Varid{as}\;\Conid{DataGroupoid}\;(\Conid{Groupoid}\;(\mathinner{\ldotp\ldotp})){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Varid{qualified}\;\Conid{\Conid{Data}.\Conid{Groupoid}.Isomorphism}\;\Varid{as}\;\Conid{DataGroupoid}\;(\Conid{Iso}\;(\mathinner{\ldotp\ldotp})){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Data}.\Conid{Functor}.Bind}\;(\Conid{Bind}\;(\mathinner{\ldotp\ldotp})){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Control}.Newtype}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\newpage
+
+I start with an umbrella class for both sum and product constructors.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;\Conid{Category}\;\Varid{k}\Rightarrow \Conid{Ctor}\;\Varid{k}\;\Varid{constr}\mid \Varid{constr}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\mathbin{::}\Varid{k}\;\Varid{a}\;\Varid{b}\to \Varid{k}\;\Varid{c}\;\Varid{d}\to \Varid{k}\;(\Varid{constr}\;\Varid{a}\;\Varid{c})\;(\Varid{constr}\;\Varid{b}\;\Varid{d}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\noindent An {\tt Ctor} is really a binary endofunctor, because it takes a morphism from a category to the same category. 
+
+\noindent I now write the following pretty general functions.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{promote}\mathbin{::}\Conid{Ctor}\;\Varid{k}\;\Varid{op}\Rightarrow \Varid{k}\;\Varid{a}\;\Varid{b}\to \Varid{k}\;(\Varid{op}\;\Varid{a}\;\Varid{c})\;(\Varid{op}\;\Varid{b}\;\Varid{c}){}\<[E]%
+\\
+\>[B]{}\Varid{promote}\mathrel{=}(\Varid{flip}\;\Varid{selfmap})\;\Varid{id}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{swapPromote}\mathbin{::}\Conid{Ctor}\;\Varid{k}\;\Varid{op}\Rightarrow \Varid{k}\;\Varid{a}\;\Varid{b}\to \Varid{k}\;(\Varid{op}\;\Varid{c}\;\Varid{a})\;(\Varid{op}\;\Varid{c}\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\Varid{swapPromote}\mathrel{=}\Varid{selfmap}\;\Varid{id}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+It is probably not clear at this point but depending on the type of {/sl op} we can get either the {\tt Arrow} $\ast\ast\ast$ or the {\tt ArrowChoice} $\interleave$ function. If we make a semiring we can get them both. That's what we are going to do.
+
+Now I can make the type classes to encode the algebraic laws of semirings. I make a class for each law.
+\vskip 10pt
+\centerline{$a+0 \leftrightarrow a$}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;\Conid{Ctor}\;\Varid{k}\;\Varid{op}\Rightarrow \Conid{Absorbs}\;\Varid{k}\;\Varid{op}\;\Varid{id}\mid \Varid{op}\to \Varid{k},\Varid{op}\to \Varid{id}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathbin{::}\Varid{k}\;(\Varid{op}\;\Varid{id}\;\Varid{a})\;\Varid{a}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathbin{::}\Varid{k}\;\Varid{a}\;(\Varid{op}\;\Varid{id}\;\Varid{a}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\vskip 10pt
+\centerline{$a+b \leftrightarrow b+a$}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;\Conid{Ctor}\;\Varid{k}\;\Varid{op}\Rightarrow \Conid{Communative}\;\Varid{k}\;\Varid{op}\mid \Varid{op}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}{}\<[14]%
+\>[14]{}\mathbin{::}\Varid{k}\;(\Varid{op}\;\Varid{a}\;\Varid{b})\;(\Varid{op}\;\Varid{b}\;\Varid{a}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\vskip 10pt
+\centerline{$(a+b)+c \leftrightarrow a+(b+c)$}    
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;\Conid{Ctor}\;\Varid{k}\;\Varid{op}\Rightarrow \Conid{Assocative}\;\Varid{k}\;\Varid{op}\mid \Varid{op}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[14]%
+\>[14]{}\mathbin{::}\Varid{k}\;(\Varid{op}\;(\Varid{op}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Varid{op}\;\Varid{a}\;(\Varid{op}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}{}\<[14]%
+\>[14]{}\mathbin{::}\Varid{k}\;(\Varid{op}\;\Varid{a}\;(\Varid{op}\;\Varid{b}\;\Varid{c}))\;(\Varid{op}\;(\Varid{op}\;\Varid{a}\;\Varid{b})\;\Varid{c}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\vskip 10pt
+\centerline{$0*a \leftrightarrow 0$}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{19}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;\Conid{Ctor}\;\Varid{k}\;\Varid{op}\Rightarrow \Conid{Annihilates}\;\Varid{k}\;\Varid{op}\;\Varid{zero}\mid \Varid{op}\;\Varid{zero}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{annihilates}{}\<[19]%
+\>[19]{}\mathbin{::}\Varid{k}\;(\Varid{op}\;\Varid{zero}\;\Varid{a})\;\Varid{zero}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\vskip 10pt
+\centerline{$(a+b)*c \leftrightarrow (a*c)+(b*c)$}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;(\Conid{Ctor}\;\Varid{k}\;\Varid{add},\Conid{Ctor}\;\Varid{k}\;\Varid{multi})\Rightarrow \Conid{Distributes}\;\Varid{k}\;\Varid{add}\;\Varid{multi}\mid \Varid{add}\;\Varid{multi}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{distribute}{}\<[18]%
+\>[18]{}\mathbin{::}\Varid{k}\;(\Varid{multi}\;(\Varid{add}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Varid{add}\;(\Varid{multi}\;\Varid{a}\;\Varid{c})\;(\Varid{multi}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{undistribute}\mathbin{::}\Varid{k}\;(\Varid{add}\;(\Varid{multi}\;\Varid{a}\;\Varid{c})\;(\Varid{multi}\;\Varid{b}\;\Varid{c}))\;(\Varid{multi}\;(\Varid{add}\;\Varid{a}\;\Varid{b})\;\Varid{c}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Now I can collect these into groups of laws for different algebraic structures I care about.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{8}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{45}{@{}>{\hspre}c<{\hspost}@{}}%
+\column{45E}{@{}l@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;(\Conid{Assocative}\;\Varid{k}\;\Varid{dot},\Conid{Absorbs}\;\Varid{k}\;\Varid{dot}\;\Varid{id}){}\<[45]%
+\>[45]{}\Rightarrow {}\<[45E]%
+\\
+\>[B]{}\hsindent{7}{}\<[7]%
+\>[7]{}\Conid{Monoidial}\;\Varid{k}\;\Varid{dot}\;\Varid{id}\mid \Varid{dot}\;\Varid{id}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{class}\;(\Conid{Monoidial}\;\Varid{k}\;\Varid{dot}\;\Varid{id},\Conid{Communative}\;\Varid{k}\;\Varid{dot})\Rightarrow {}\<[E]%
+\\
+\>[B]{}\hsindent{7}{}\<[7]%
+\>[7]{}\Conid{CommunativeMonoidial}\;\Varid{k}\;\Varid{dot}\;\Varid{id}\mid \Varid{dot}\;\Varid{id}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{class}\;(\Conid{CommunativeMonoidial}\;\Varid{k}\;\Varid{add}\;\Varid{zero},{}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{CommunativeMonoidial}\;\Varid{k}\;\Varid{multi}\;\Varid{one},{}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{Annihilates}\;\Varid{k}\;\Varid{multi}\;\Varid{zero},{}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{Distributes}\;\Varid{k}\;\Varid{add}\;\Varid{multi})\Rightarrow {}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{Semiring}\;\Varid{k}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\mid \Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\to \Varid{k}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+From which I regain {\tt Arrow} functionality.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{first}\mathbin{::}\Conid{Semiring}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{multi}\;\Varid{b}\;\Varid{d})\;(\Varid{multi}\;\Varid{c}\;\Varid{d}){}\<[E]%
+\\
+\>[B]{}\Varid{first}\mathrel{=}\Varid{promote}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{second}\mathbin{::}\Conid{Semiring}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{multi}\;\Varid{d}\;\Varid{b})\;(\Varid{multi}\;\Varid{d}\;\Varid{c}){}\<[E]%
+\\
+\>[B]{}\Varid{second}\mathrel{=}\Varid{swapPromote}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{left}\mathbin{::}\Conid{Semiring}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{add}\;\Varid{b}\;\Varid{d})\;(\Varid{add}\;\Varid{c}\;\Varid{d}){}\<[E]%
+\\
+\>[B]{}\Varid{left}\mathrel{=}\Varid{promote}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{right}\mathbin{::}\Conid{Semiring}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{add}\;\Varid{d}\;\Varid{b})\;(\Varid{add}\;\Varid{d}\;\Varid{c}){}\<[E]%
+\\
+\>[B]{}\Varid{right}\mathrel{=}\Varid{swapPromote}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Many of the Generic Arrow functions can be included through absorption ({\tt cancel}, {\tt uncancel}) and commutativity ({\tt swap}).
+
+This also makes clear the relationship between {\tt Arrow} and {\tt ArrowChoice} as has been noted else where. Basically the same thing with a different endofunctor ({\tt Arrow} uses product types, {\tt ArrowChoice} uses sum types) as the monoid operator of a type level communative monoid. 
+
+\newpage
+
+Two important and instances are sum and product, or in Haskell parlance {\tt(,)} tuples and {\tt Either} respectively.
+
+\section{Small Category Instances}
+\subsection{Function Instances}
+\subsubsection{Sum Communative Monoid Instances}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{12}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mbox{\onelinecomment Sugar}{}\<[E]%
+\\
+\>[B]{}\mathbf{type}\;\sum \mathrel{=}\Conid{Either}{}\<[E]%
+\\
+\>[B]{}\mathbf{type}\;\MVZero {}\<[12]%
+\>[12]{}\mathrel{=}\Conid{Void}{}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;\Conid{Ctor}\;(\to )\;\sum \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;\Varid{f}\;\Varid{g}\mathrel{=}\Varid{either}\;(\Conid{Left}\mathbin{\circ}\Varid{f})\;(\Conid{Right}\mathbin{\circ}\Varid{g}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Absorbs}\;(\to )\;\sum \;\MVZero \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}\;{}\<[13]%
+\>[13]{}(\Conid{Right}\;\Varid{x})\mathrel{=}\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\;\Varid{x}\mathrel{=}\Conid{Right}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Assocative}\;(\to )\;\sum \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{either}\;(\Varid{either}\;(\Conid{Left})\;(\Conid{Right}\mathbin{\circ}\Conid{Left}))\;(\Conid{Right}\mathbin{\circ}\Conid{Right}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Varid{either}\;(\Conid{Left}\mathbin{\circ}\Conid{Left})\;(\Varid{either}\;(\Conid{Left}\mathbin{\circ}\Conid{Right})\;(\Conid{Right})){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monoidial}\;(\to )\;\sum \;\MVZero \;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Communative}\;(\to )\;\sum \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}\Varid{either}\;(\Conid{Right})\;(\Conid{Left}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{CommunativeMonoidial}\;(\to )\;\sum \;\MVZero \;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Product Commutative Monoid Instances}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{11}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{type}\;\prod \mathrel{=}(,){}\<[E]%
+\\
+\>[B]{}\mathbf{type}\;\MVOne {}\<[11]%
+\>[11]{}\mathrel{=}(){}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;\Conid{Ctor}\;(\to )\;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;\Varid{f}\;\Varid{g}\;(\Varid{x},\Varid{y})\mathrel{=}(\Varid{f}\;\Varid{x},\Varid{g}\;\Varid{y}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Absorbs}\;(\to )\;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}\;{}\<[13]%
+\>[13]{}((),\Varid{x})\mathrel{=}\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\;\Varid{x}\mathrel{=}((),\Varid{x}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Assocative}\;(\to )\;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}\;{}\<[13]%
+\>[13]{}((\Varid{x},\Varid{y}),\Varid{z})\mathrel{=}(\Varid{x},(\Varid{y},\Varid{z})){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\;(\Varid{x},(\Varid{y},\Varid{z}))\mathrel{=}((\Varid{x},\Varid{y}),\Varid{z}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monoidial}\;(\to )\;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Communative}\;(\to )\;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\;(\Varid{x},\Varid{y})\mathrel{=}(\Varid{y},\Varid{x}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{CommunativeMonoidial}\;(\to )\;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Function Semiring Instance}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{19}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{29}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{33}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{instance}\;\Conid{Annihilates}\;(\to )\;\prod \;\MVZero \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{annihilates}\;{}\<[19]%
+\>[19]{}(\bot ,\Varid{x})\mathrel{=}\bot {}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Distributes}\;(\to )\;\sum \;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{distribute}\;(\Conid{Left}\;\Varid{x},\Varid{z}){}\<[29]%
+\>[29]{}\mathrel{=}\Conid{Left}\;(\Varid{x},\Varid{z}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{distribute}\;(\Conid{Right}\;\Varid{y},\Varid{z})\mathrel{=}\Conid{Right}\;(\Varid{y},\Varid{z}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{undistribute}\;(\Conid{Left}\;(\Varid{x},\Varid{z})){}\<[33]%
+\>[33]{}\mathrel{=}(\Conid{Left}\;\Varid{x},\Varid{z}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{undistribute}\;(\Conid{Right}\;(\Varid{y},\Varid{z}))\mathrel{=}(\Conid{Right}\;\Varid{y},\Varid{z}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Semiring}\;(\to )\;\sum \;\MVZero \;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection{Kleisli Instances}
+
+The functional dependencies of the classes require alternate versions of the sum and product types used for \to instances. 
+
+
+\subsection{Sum Communative Monoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{20}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{24}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{25}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{34}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{38}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{40}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\sum \;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{KLeft}\;\Varid{a}\mid \Conid{KRight}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\mathbf{newtype}\;\MVZero \mathrel{=}\Conid{KZ}\;\Conid{Void}{}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Ctor}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;(\Conid{Kleisli}\;\Varid{f})\;(\Conid{Kleisli}\;\Varid{g})\mathrel{=}\Conid{Kleisli}\mathbin{\$}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[9]{}\hsindent{4}{}\<[13]%
+\>[13]{}\Conid{KLeft}\;{}\<[20]%
+\>[20]{}\Varid{x}\to \Conid{KLeft}\mathbin{`\Varid{liftM}`}{}\<[40]%
+\>[40]{}\Varid{f}\;\Varid{x}{}\<[E]%
+\\
+\>[9]{}\hsindent{4}{}\<[13]%
+\>[13]{}\Conid{KRight}\;\Varid{x}\to \Conid{KRight}\mathbin{`\Varid{liftM}`}\Varid{g}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Absorbs}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\MVZero \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KRight}\;\Varid{x})\to \Varid{return}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Assocative}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[13]{}\hsindent{4}{}\<[17]%
+\>[17]{}\Conid{KLeft}\;\Varid{x}{}\<[26]%
+\>[26]{}\to \mathbf{case}\;\Varid{x}\;\mathbf{of}{}\<[E]%
+\\
+\>[26]{}\hsindent{5}{}\<[31]%
+\>[31]{}\Conid{KLeft}\;{}\<[38]%
+\>[38]{}\Varid{y}\to \Varid{return}\mathbin{\$}\Conid{KLeft}\;\Varid{y}{}\<[E]%
+\\
+\>[26]{}\hsindent{5}{}\<[31]%
+\>[31]{}\Conid{KRight}\;\Varid{y}\to \Varid{return}\mathbin{\$}\Conid{KRight}\mathbin{\$}\Conid{KLeft}\;\Varid{y}{}\<[E]%
+\\
+\>[13]{}\hsindent{4}{}\<[17]%
+\>[17]{}\Conid{KRight}\;\Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KRight}\mathbin{\$}\Conid{KRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{12}{}\<[17]%
+\>[17]{}\Conid{KLeft}\;{}\<[24]%
+\>[24]{}\Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KLeft}\mathbin{\$}\Conid{KLeft}\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{12}{}\<[17]%
+\>[17]{}\Conid{KRight}\;\Varid{x}\to \mathbf{case}\;\Varid{x}\;\mathbf{of}{}\<[E]%
+\\
+\>[17]{}\hsindent{14}{}\<[31]%
+\>[31]{}\Conid{KLeft}\;\Varid{y}{}\<[40]%
+\>[40]{}\to \Varid{return}\mathbin{\$}\Conid{KLeft}\mathbin{\$}\Conid{KRight}\;\Varid{y}{}\<[E]%
+\\
+\>[17]{}\hsindent{14}{}\<[31]%
+\>[31]{}\Conid{KRight}\;\Varid{y}\to \Varid{return}\mathbin{\$}\Conid{KRight}\;\Varid{y}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Monoidial}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\MVZero \;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Communative}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \mathbf{case}\;\Varid{x}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{20}{}\<[25]%
+\>[25]{}\Conid{KLeft}\;\Varid{x}{}\<[34]%
+\>[34]{}\to \Varid{return}\mathbin{\$}\Conid{KRight}\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{20}{}\<[25]%
+\>[25]{}\Conid{KRight}\;\Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KLeft}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{CommunativeMonoidial}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\MVZero \;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+\subsubsection{Product Commutative Monoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{25}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\prod \;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{KP}\;\Varid{a}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\mathbf{newtype}\;\MVOne {}\<[15]%
+\>[15]{}\mathrel{=}\Conid{KO}\;(){}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Ctor}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;(\Conid{Kleisli}\;\Varid{f})\;(\Conid{Kleisli}\;\Varid{g})\mathrel{=}\Conid{Kleisli}\mathbin{\$}{}\<[E]%
+\\
+\>[5]{}\hsindent{20}{}\<[25]%
+\>[25]{}\lambda (\Conid{KP}\;\Varid{x}\;\Varid{y})\to (\Varid{uncurry}\;\Conid{KP})\mathbin{`\Varid{liftM}`}\Varid{mfuse}\;(\Varid{f}\;\Varid{x},\Varid{g}\;\Varid{y}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Absorbs}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KP}\;(\Conid{KO}\;())\;\Varid{x})\to \Varid{return}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KP}\;(\Conid{KO}\;())\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Assocative}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KP}\;(\Conid{KP}\;\Varid{x}\;\Varid{y})\;\Varid{z})\to \Varid{return}\mathbin{\$}\Conid{KP}\;\Varid{x}\;(\Conid{KP}\;\Varid{y}\;\Varid{z}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KP}\;\Varid{x}\;(\Conid{KP}\;\Varid{y}\;\Varid{z}))\to \Varid{return}\mathbin{\$}\Conid{KP}\;(\Conid{KP}\;\Varid{x}\;\Varid{y})\;\Varid{z}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Monoidial}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Communative}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KP}\;\Varid{x}\;\Varid{y})\to \Varid{return}\mathbin{\$}\Conid{KP}\;\Varid{y}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{CommunativeMonoidial}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Function Semiring Instance}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{35}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{52}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{53}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Annihilates}\;(\Conid{Kleisli}\;\Varid{m})\;\prod \;\MVZero \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{annihilates}{}\<[18]%
+\>[18]{}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KP}\;\bot \;\Varid{x})\to \Varid{return}\;\bot {}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Distributes}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\prod \;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{distribute}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{11}{}\<[16]%
+\>[16]{}\Conid{KP}\;(\Conid{KLeft}\;\Varid{x})\;\Varid{z}\to {}\<[35]%
+\>[35]{}\Varid{return}\mathbin{\$}\Conid{KLeft}\mathbin{\$}{}\<[53]%
+\>[53]{}\Conid{KP}\;\Varid{x}\;\Varid{z}{}\<[E]%
+\\
+\>[5]{}\hsindent{11}{}\<[16]%
+\>[16]{}\Conid{KP}\;(\Conid{KRight}\;\Varid{y})\;\Varid{z}\to \Varid{return}\mathbin{\$}\Conid{KRight}\mathbin{\$}\Conid{KP}\;\Varid{y}\;\Varid{z}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{undistribute}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Conid{KLeft}\;{}\<[16]%
+\>[16]{}(\Conid{KP}\;\Varid{x}\;\Varid{z})\to \Varid{return}\mathbin{\$}\Conid{KP}\;(\Conid{KLeft}\;\Varid{x})\;{}\<[52]%
+\>[52]{}\Varid{z}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Conid{KRight}\;(\Conid{KP}\;\Varid{x}\;\Varid{z})\to \Varid{return}\mathbin{\$}\Conid{KP}\;(\Conid{KRight}\;\Varid{x})\;{}\<[52]%
+\>[52]{}\Varid{z}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monad}\;\Varid{m}\Rightarrow \Conid{Semiring}\;(\Conid{Kleisli}\;\Varid{m})\;\sum \;\MVZero \;\prod \;\MVOne \;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+\section{Groupoid Class}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{class}\;(\Conid{Category}\;\Varid{k},\Conid{Category}\;(\Varid{t}\;\Varid{k}))\Rightarrow \Conid{Groupoid}\;\Varid{t}\;\Varid{k}\mid \Varid{k}\to \Varid{t}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{inv}\mathbin{::}\Varid{t}\;\Varid{k}\;\Varid{a}\;\Varid{b}\to \Varid{t}\;\Varid{k}\;\Varid{b}\;\Varid{a}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\section{Groupoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{24}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{Iso}\;\Varid{k}\;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{Iso}\;\{\mskip1.5mu {}\<[E]%
+\\
+\>[B]{}\hsindent{9}{}\<[9]%
+\>[9]{}\Varid{embed}{}\<[17]%
+\>[17]{}\mathbin{::}\Varid{k}\;\Varid{a}\;\Varid{b},{}\<[E]%
+\\
+\>[B]{}\hsindent{9}{}\<[9]%
+\>[9]{}\Varid{project}\mathbin{::}\Varid{k}\;\Varid{b}\;\Varid{a}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\mskip1.5mu\}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Category}\;\Varid{k})\Rightarrow \Conid{Category}\;(\Conid{Iso}\;\Varid{k})\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{id}{}\<[9]%
+\>[9]{}\mathrel{=}\Conid{Iso}\;\Varid{id}\;\Varid{id}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}(\Conid{Iso}\;\Varid{f}\;\Varid{g})\mathbin{\circ}(\Conid{Iso}\;\Varid{h}\;\Varid{i})\mathrel{=}\Conid{Iso}\;(\Varid{f}\mathbin{\circ}\Varid{h})\;(\Varid{i}\mathbin{\circ}\Varid{g}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Newtype}\;(\Conid{Iso}\;\Varid{k}\;\Varid{a}\;\Varid{b})\;(\Varid{k}\;\Varid{a}\;\Varid{b},\Varid{k}\;\Varid{b}\;\Varid{a})\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{pack}\;(\Varid{f},\Varid{g}){}\<[24]%
+\>[24]{}\mathrel{=}\Conid{Iso}\;\Varid{f}\;\Varid{g}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unpack}\;(\Conid{Iso}\;\Varid{f}\;\Varid{g}){}\<[24]%
+\>[24]{}\mathrel{=}(\Varid{f},\Varid{g}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Category}\;\Varid{k})\Rightarrow \Conid{Groupoid}\;\Conid{Iso}\;\Varid{k}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{inv}\;(\Conid{Iso}\;\Varid{f}\;\Varid{g})\mathrel{=}\Conid{Iso}\;\Varid{g}\;\Varid{f}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\subsection{Helper Code}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{type}\;\Conid{Biject}{}\<[16]%
+\>[16]{}\mathrel{=}\Conid{Iso}\;(\to ){}\<[E]%
+\\
+\>[B]{}\mathbf{type}\;\Conid{KBiject}\;\Varid{m}\mathrel{=}\Conid{Iso}\;(\Conid{Kleisli}\;\Varid{m}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}(\mathbin{<->})\mathrel{=}\Conid{Iso}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\subsection{Groupoid Semirings Instances}
+
+
+\subsection{Groupoid with a Function as the base category}
+\subsubsection{Sum Communative Monoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{23}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{27}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{29}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{32}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;{}\<[7]%
+\>[7]{}\Conid{BSum}\;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{BLeft}\;\Varid{a}\mid \Conid{BRight}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\mathbf{newtype}\;\Conid{BZero}\mathrel{=}\Conid{BZ}\;\Conid{Void}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Ctor}\;\Conid{Biject}\;\Conid{BSum}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;\Varid{f}\;\Varid{g}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\;(\Conid{BLeft}\;\Varid{x}){}\<[23]%
+\>[23]{}\mathrel{=}\Conid{BLeft}{}\<[32]%
+\>[32]{}\mathbin{\$}(\Varid{embed}\;\Varid{f})\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\;(\Conid{BRight}\;\Varid{x})\mathrel{=}\Conid{BRight}\mathbin{\$}(\Varid{embed}\;\Varid{g})\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{bk}\;(\Conid{BLeft}\;\Varid{x}){}\<[23]%
+\>[23]{}\mathrel{=}\Conid{BLeft}{}\<[32]%
+\>[32]{}\mathbin{\$}(\Varid{project}\;\Varid{f})\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{bk}\;(\Conid{BRight}\;\Varid{x})\mathrel{=}\Conid{BRight}\mathbin{\$}(\Varid{project}\;\Varid{g})\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Absorbs}\;\Conid{Biject}\;\Conid{BSum}\;\Conid{BZero}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathrel{=}\Varid{biject\char95 sum\char95 absorb}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathrel{=}\Varid{inv}\;\Varid{biject\char95 sum\char95 absorb}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{biject\char95 sum\char95 absorb}\mathbin{::}\Conid{Biject}\;(\Conid{BSum}\;\Conid{BZero}\;\Varid{a})\;(\Varid{a}){}\<[E]%
+\\
+\>[B]{}\Varid{biject\char95 sum\char95 absorb}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BRight}\;\Varid{x})\mathrel{=}\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;\Varid{x}\mathrel{=}\Conid{BRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Assocative}\;\Conid{Biject}\;\Conid{BSum}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{biject\char95 sum\char95 assoc}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Varid{inv}\;\Varid{biject\char95 sum\char95 assoc}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{biject\char95 sum\char95 assoc}\mathbin{::}\Conid{Biject}\;(\Conid{BSum}\;(\Conid{BSum}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Conid{BSum}\;\Varid{a}\;(\Conid{BSum}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\Varid{biject\char95 sum\char95 assoc}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BLeft}\;(\Conid{BLeft}\;\Varid{x})){}\<[27]%
+\>[27]{}\mathrel{=}\Conid{BLeft}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BLeft}\;(\Conid{BRight}\;\Varid{x}))\mathrel{=}\Conid{BRight}\mathbin{\$}\Conid{BLeft}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BRight}\;\Varid{x}){}\<[27]%
+\>[27]{}\mathrel{=}\Conid{BRight}\mathbin{\$}\Conid{BRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;(\Conid{BLeft}\;\Varid{x}){}\<[29]%
+\>[29]{}\mathrel{=}\Conid{BLeft}\;(\Conid{BLeft}\;\Varid{x}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;(\Conid{BRight}\;(\Conid{BLeft}\;\Varid{x}))\mathrel{=}\Conid{BLeft}\;(\Conid{BRight}\;\Varid{x}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;(\Conid{BRight}\;(\Conid{BRight}\;\Varid{x})){}\<[29]%
+\>[29]{}\mathrel{=}\Conid{BRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monoidial}\;\Conid{Biject}\;\Conid{BSum}\;\Conid{BZero}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Communative}\;\Conid{Biject}\;\Conid{BSum}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\;(\Conid{BRight}\;\Varid{x})\mathrel{=}\Conid{BLeft}\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\;(\Conid{BLeft}\;\Varid{x}){}\<[23]%
+\>[23]{}\mathrel{=}\Conid{BRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{bk}\;(\Conid{BRight}\;\Varid{x})\mathrel{=}\Conid{BLeft}\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{bk}\;(\Conid{BLeft}\;\Varid{x}){}\<[23]%
+\>[23]{}\mathrel{=}\Conid{BRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{CommunativeMonoidial}\;\Conid{Biject}\;\Conid{BSum}\;\Conid{BZero}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Product Communative Monoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{15}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{BProduct}\;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{BP}\;\Varid{a}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\mathbf{newtype}\;\Conid{BOne}{}\<[15]%
+\>[15]{}\mathrel{=}\Conid{BO}\;(){}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;\Conid{Ctor}\;\Conid{Biject}\;\Conid{BProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;(\Conid{Iso}\;\Varid{f\char95 fw}\;\Varid{f\char95 bk})\;(\Conid{Iso}\;\Varid{g\char95 fw}\;\Varid{g\char95 bk})\mathrel{=}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Conid{Iso}\;(\lambda (\Conid{BP}\;\Varid{x}\;\Varid{y})\to \Conid{BP}\;(\Varid{f\char95 fw}\;\Varid{x})\;(\Varid{g\char95 fw}\;\Varid{y}))\;(\lambda (\Conid{BP}\;\Varid{x}\;\Varid{y})\to \Conid{BP}\;(\Varid{f\char95 bk}\;\Varid{x})\;(\Varid{g\char95 bk}\;\Varid{y})){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Absorbs}\;\Conid{Biject}\;\Conid{BProduct}\;\Conid{BOne}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathrel{=}\Varid{biject\char95 product\char95 absorb\char95 iso}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathrel{=}\Varid{inv}\;\Varid{biject\char95 product\char95 absorb\char95 iso}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{biject\char95 product\char95 absorb\char95 iso}\mathbin{::}\Conid{Biject}\;(\Conid{BProduct}\;\Conid{BOne}\;\Varid{a})\;\Varid{a}{}\<[E]%
+\\
+\>[B]{}\Varid{biject\char95 product\char95 absorb\char95 iso}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BP}\;(\Conid{BO}\;())\;\Varid{x})\mathrel{=}\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;\Varid{x}\mathrel{=}(\Conid{BP}\;(\Conid{BO}\;())\;\Varid{x}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Assocative}\;\Conid{Biject}\;\Conid{BProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{biject\char95 product\char95 assocate\char95 iso}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Varid{inv}\;\Varid{biject\char95 product\char95 assocate\char95 iso}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{biject\char95 product\char95 assocate\char95 iso}\mathbin{::}\Conid{Biject}\;(\Conid{BProduct}\;(\Conid{BProduct}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Conid{BProduct}\;\Varid{a}\;(\Conid{BProduct}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\Varid{biject\char95 product\char95 assocate\char95 iso}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BP}\;(\Conid{BP}\;\Varid{x}\;\Varid{y})\;\Varid{z})\mathrel{=}\Conid{BP}\;\Varid{x}\;(\Conid{BP}\;\Varid{y}\;\Varid{z}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;(\Conid{BP}\;\Varid{x}\;(\Conid{BP}\;\Varid{y}\;\Varid{z}))\mathrel{=}\Conid{BP}\;(\Conid{BP}\;\Varid{x}\;\Varid{y})\;\Varid{z}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Monoidial}\;\Conid{Biject}\;\Conid{BProduct}\;\Conid{BOne}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Communative}\;\Conid{Biject}\;\Conid{BProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}(\lambda (\Conid{BP}\;\Varid{x}\;\Varid{y})\to \Conid{BP}\;\Varid{y}\;\Varid{x})\mathbin{<->}(\lambda (\Conid{BP}\;\Varid{x}\;\Varid{y})\to \Conid{BP}\;\Varid{y}\;\Varid{x}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{CommunativeMonoidial}\;\Conid{Biject}\;\Conid{BProduct}\;\Conid{BOne}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Semiring Instance}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{instance}\;\Conid{Annihilates}\;\Conid{Biject}\;\Conid{BProduct}\;\Conid{BZero}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{annihilates}\mathrel{=}(\lambda (\Conid{BP}\;\bot \;\Varid{x})\to \bot )\mathbin{<->}(\lambda \Varid{x}\to \Conid{BP}\;\Varid{x}\;\bot ){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Distributes}\;\Conid{Biject}\;\Conid{BSum}\;\Conid{BProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{distribute}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{biject\char95 distributes\char95 iso}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{undistribute}\mathrel{=}\Varid{inv}\;\Varid{biject\char95 distributes\char95 iso}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{biject\char95 distributes\char95 iso}\mathbin{::}\Conid{Biject}\;(\Conid{BProduct}\;(\Conid{BSum}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Conid{BSum}\;(\Conid{BProduct}\;\Varid{a}\;\Varid{c})\;(\Conid{BProduct}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\Varid{biject\char95 distributes\char95 iso}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BP}\;(\Conid{BLeft}\;\Varid{x})\;\Varid{z}){}\<[26]%
+\>[26]{}\mathrel{=}\Conid{BLeft}\;(\Conid{BP}\;\Varid{x}\;\Varid{z}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\;(\Conid{BP}\;(\Conid{BRight}\;\Varid{y})\;\Varid{z})\mathrel{=}\Conid{BRight}\;(\Conid{BP}\;\Varid{y}\;\Varid{z}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;(\Conid{BLeft}\;(\Conid{BP}\;\Varid{x}\;\Varid{z})){}\<[26]%
+\>[26]{}\mathrel{=}\Conid{BP}\;(\Conid{BLeft}\;\Varid{x})\;\Varid{z}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\;(\Conid{BRight}\;(\Conid{BP}\;\Varid{y}\;\Varid{z}))\mathrel{=}\Conid{BP}\;(\Conid{BRight}\;\Varid{y})\;\Varid{z}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;\Conid{Semiring}\;\Conid{Biject}\;\Conid{BSum}\;\Conid{BZero}\;\Conid{BProduct}\;\Conid{BOne}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsection{Groupoid with a Klesli arrow as the base category}
+\subsubsection{Sum Communative Monoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{25}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{27}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{33}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{35}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{39}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{41}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{54}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{KBSum}\;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{KBLeft}\;\Varid{a}\mid \Conid{KBRight}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\mathbf{newtype}\;\Conid{KBZero}\mathrel{=}\Conid{KBZ}\;\Conid{Void}{}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Ctor}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;\Varid{f}\;\Varid{g}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}{}\<[E]%
+\\
+\>[9]{}\hsindent{8}{}\<[17]%
+\>[17]{}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[17]{}\hsindent{8}{}\<[25]%
+\>[25]{}\Conid{KBLeft}\;{}\<[33]%
+\>[33]{}\Varid{x}\to \Conid{KBLeft}\mathbin{`\Varid{liftM}`}{}\<[54]%
+\>[54]{}(\Varid{runKleisli}\mathbin{\$}\Varid{embed}\;\Varid{f})\;\Varid{x}{}\<[E]%
+\\
+\>[17]{}\hsindent{8}{}\<[25]%
+\>[25]{}\Conid{KBRight}\;\Varid{x}\to \Conid{KBRight}\mathbin{`\Varid{liftM}`}(\Varid{runKleisli}\mathbin{\$}\Varid{embed}\;\Varid{g})\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}{}\<[E]%
+\\
+\>[9]{}\hsindent{8}{}\<[17]%
+\>[17]{}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[17]{}\hsindent{8}{}\<[25]%
+\>[25]{}\Conid{KBLeft}\;{}\<[33]%
+\>[33]{}\Varid{x}\to \Conid{KBLeft}\mathbin{`\Varid{liftM}`}{}\<[54]%
+\>[54]{}(\Varid{runKleisli}\mathbin{\$}\Varid{project}\;\Varid{f})\;\Varid{x}{}\<[E]%
+\\
+\>[17]{}\hsindent{8}{}\<[25]%
+\>[25]{}\Conid{KBRight}\;\Varid{x}\to \Conid{KBRight}\mathbin{`\Varid{liftM}`}(\Varid{runKleisli}\mathbin{\$}\Varid{project}\;\Varid{g})\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Absorbs}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\Conid{KBZero}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathrel{=}\Varid{kbiject\char95 sum\char95 absorb}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathrel{=}\Varid{inv}\;\Varid{kbiject\char95 sum\char95 absorb}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{kbiject\char95 sum\char95 absorb}\mathbin{::}(\Conid{Monad}\;\Varid{m})\Rightarrow (\Conid{KBiject}\;\Varid{m})\;(\Conid{KBSum}\;\Conid{KBZero}\;\Varid{a})\;(\Varid{a}){}\<[E]%
+\\
+\>[B]{}\Varid{kbiject\char95 sum\char95 absorb}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KBRight}\;\Varid{x})\to \Varid{return}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KBRight}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Assocative}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{kbiject\char95 sum\char95 assoc}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Varid{inv}\;\Varid{kbiject\char95 sum\char95 assoc}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{kbiject\char95 sum\char95 assoc}\mathbin{::}(\Conid{Monad}\;\Varid{m})\Rightarrow (\Conid{KBiject}\;\Varid{m})\;(\Conid{KBSum}\;(\Conid{KBSum}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Conid{KBSum}\;\Varid{a}\;(\Conid{KBSum}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\Varid{kbiject\char95 sum\char95 assoc}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{12}{}\<[17]%
+\>[17]{}\Conid{KBLeft}\;\Varid{x}{}\<[27]%
+\>[27]{}\to \mathbf{case}\;\Varid{x}\;\mathbf{of}{}\<[E]%
+\\
+\>[27]{}\hsindent{4}{}\<[31]%
+\>[31]{}\Conid{KBLeft}\;{}\<[39]%
+\>[39]{}\Varid{y}\to \Varid{return}\mathbin{\$}\Conid{KBLeft}\;\Varid{y}{}\<[E]%
+\\
+\>[27]{}\hsindent{4}{}\<[31]%
+\>[31]{}\Conid{KBRight}\;\Varid{y}\to \Varid{return}\mathbin{\$}\Conid{KBRight}\mathbin{\$}\Conid{KBLeft}\;\Varid{y}{}\<[E]%
+\\
+\>[5]{}\hsindent{12}{}\<[17]%
+\>[17]{}\Conid{KBRight}\;\Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KBRight}\mathbin{\$}\Conid{KBRight}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{12}{}\<[17]%
+\>[17]{}\Conid{KBLeft}\;{}\<[25]%
+\>[25]{}\Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KBLeft}\mathbin{\$}\Conid{KBLeft}\;\Varid{x}{}\<[E]%
+\\
+\>[5]{}\hsindent{12}{}\<[17]%
+\>[17]{}\Conid{KBRight}\;\Varid{x}\to \mathbf{case}\;\Varid{x}\;\mathbf{of}{}\<[E]%
+\\
+\>[17]{}\hsindent{14}{}\<[31]%
+\>[31]{}\Conid{KBLeft}\;\Varid{y}{}\<[41]%
+\>[41]{}\to \Varid{return}\mathbin{\$}\Conid{KBLeft}\mathbin{\$}\Conid{KBRight}\;\Varid{y}{}\<[E]%
+\\
+\>[17]{}\hsindent{14}{}\<[31]%
+\>[31]{}\Conid{KBRight}\;\Varid{y}\to \Varid{return}\mathbin{\$}\Conid{KBRight}\;\Varid{y}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Monoidial}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\Conid{KBZero}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Communative}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{fw}\;\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \mathbf{case}\;\Varid{x}\;\mathbf{of}{}\<[E]%
+\\
+\>[9]{}\hsindent{16}{}\<[25]%
+\>[25]{}\Conid{KBLeft}\;\Varid{x}{}\<[35]%
+\>[35]{}\to \Varid{return}\mathbin{\$}\Conid{KBRight}\;\Varid{x}{}\<[E]%
+\\
+\>[9]{}\hsindent{16}{}\<[25]%
+\>[25]{}\Conid{KBRight}\;\Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KBLeft}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{CommunativeMonoidial}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\Conid{KBZero}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\subsubsection{Product Communative Monoid Instances}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{13}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{16}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{53}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{89}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{data}\;\Conid{KBProduct}\;\Varid{a}\;\Varid{b}\mathrel{=}\Conid{KBP}\;\Varid{a}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\mathbf{newtype}\;\Conid{KBOne}{}\<[16]%
+\>[16]{}\mathrel{=}\Conid{KBO}\;(){}\<[E]%
+\\
+\>[B]{}\mbox{\onelinecomment Instances    }{}\<[E]%
+\\
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Ctor}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\;\Varid{f}\;\Varid{g}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}{}\<[E]%
+\\
+\>[9]{}\hsindent{8}{}\<[17]%
+\>[17]{}\lambda (\Conid{KBP}\;\Varid{x}\;\Varid{y})\to (\lambda (\Varid{x},\Varid{y})\to \Conid{KBP}\;\Varid{x}\;\Varid{y})\mathbin{`\Varid{liftM}`}\Varid{mfuse}\;((\Varid{runKleisli}\mathbin{\$}\Varid{embed}\;{}\<[89]%
+\>[89]{}\Varid{f})\;\Varid{x},(\Varid{runKleisli}\mathbin{\$}\Varid{embed}\;\Varid{g})\;\Varid{y}){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}{}\<[E]%
+\\
+\>[9]{}\hsindent{8}{}\<[17]%
+\>[17]{}\lambda (\Conid{KBP}\;\Varid{x}\;\Varid{y})\to (\lambda (\Varid{x},\Varid{y})\to \Conid{KBP}\;\Varid{x}\;\Varid{y}){}\<[53]%
+\>[53]{}\mathbin{`\Varid{liftM}`}\Varid{mfuse}\;((\Varid{runKleisli}\mathbin{\$}\Varid{project}\;\Varid{f})\;\Varid{x},(\Varid{runKleisli}\mathbin{\$}\Varid{project}\;\Varid{g})\;\Varid{y}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Absorbs}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\Conid{KBOne}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{absorb}{}\<[14]%
+\>[14]{}\mathrel{=}\Varid{kbiject\char95 product\char95 absorb}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unabsorb}\mathrel{=}\Varid{inv}\;\Varid{kbiject\char95 product\char95 absorb}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{kbiject\char95 product\char95 absorb}\mathbin{::}\Conid{Monad}\;\Varid{m}\Rightarrow (\Conid{KBiject}\;\Varid{m})\;(\Conid{KBProduct}\;\Conid{KBOne}\;\Varid{a})\;(\Varid{a}){}\<[E]%
+\\
+\>[B]{}\Varid{kbiject\char95 product\char95 absorb}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KBP}\;(\Conid{KBO}\;())\;\Varid{x})\to \Varid{return}\;\Varid{x}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KBP}\;(\Conid{KBO}\;())\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Assocative}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{assoc}{}\<[13]%
+\>[13]{}\mathrel{=}\Varid{kbiject\char95 product\char95 assoc}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{unassoc}\mathrel{=}\Varid{inv}\;\Varid{kbiject\char95 product\char95 assoc}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{kbiject\char95 product\char95 assoc}\mathbin{::}(\Conid{Monad}\;\Varid{m})\Rightarrow (\Conid{KBiject}\;\Varid{m})\;(\Conid{KBProduct}\;(\Conid{KBProduct}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Conid{KBProduct}\;\Varid{a}\;(\Conid{KBProduct}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\Varid{kbiject\char95 product\char95 assoc}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KBP}\;(\Conid{KBP}\;\Varid{f}\;\Varid{g})\;\Varid{h})\to \Varid{return}\mathbin{\$}\Conid{KBP}\;\Varid{f}\;(\Conid{KBP}\;\Varid{g}\;\Varid{h}){}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KBP}\;\Varid{f}\;(\Conid{KBP}\;\Varid{g}\;\Varid{h}))\to \Varid{return}\mathbin{\$}\Conid{KBP}\;(\Conid{KBP}\;\Varid{f}\;\Varid{g})\;\Varid{h}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Monoidial}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\Conid{KBOne}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Communative}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{commute}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{fw}\;\mathbf{where}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KBP}\;\Varid{x}\;\Varid{y})\to \Varid{return}\mathbin{\$}\Conid{KBP}\;\Varid{y}\;\Varid{x}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{CommunativeMonoidial}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\Conid{KBOne}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+\subsubsection{Semiring Instance}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{9}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{18}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{21}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{27}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{39}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{45}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Annihilates}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBProduct}\;\Conid{KBZero}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{annihilates}\mathrel{=}(\Conid{Kleisli}\mathbin{\$}\lambda (\Conid{KBP}\;\bot \;\Varid{x})\to \Varid{return}\;\bot )\mathbin{<->}(\Conid{Kleisli}\mathbin{\$}\lambda \Varid{x}\to \Varid{return}\mathbin{\$}\Conid{KBP}\;\Varid{x}\;\bot ){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Distributes}\;(\Conid{KBiject}\;\Varid{m})\;\Conid{KBSum}\;\Conid{KBProduct}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{distribute}{}\<[18]%
+\>[18]{}\mathrel{=}\Varid{kbiject\char95 distributes\char95 iso}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{undistribute}\mathrel{=}\Varid{inv}\;\Varid{kbiject\char95 distributes\char95 iso}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{kbiject\char95 distributes\char95 iso}\mathbin{::}(\Conid{Monad}\;\Varid{m})\Rightarrow (\Conid{KBiject}\;\Varid{m})\;(\Conid{KBProduct}\;(\Conid{KBSum}\;\Varid{a}\;\Varid{b})\;\Varid{c})\;(\Conid{KBSum}\;(\Conid{KBProduct}\;\Varid{a}\;\Varid{c})\;(\Conid{KBProduct}\;\Varid{b}\;\Varid{c})){}\<[E]%
+\\
+\>[B]{}\Varid{kbiject\char95 distributes\char95 iso}\mathrel{=}\Varid{fw}\mathbin{<->}\Varid{bk}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{fw}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Conid{KBP}\;(\Conid{KBLeft}\;\Varid{x})\;\Varid{z}{}\<[27]%
+\>[27]{}\to \Varid{return}\mathbin{\$}\Conid{KBLeft}\;(\Conid{KBP}\;\Varid{x}\;\Varid{z}){}\<[E]%
+\\
+\>[5]{}\hsindent{4}{}\<[9]%
+\>[9]{}\Conid{KBP}\;(\Conid{KBRight}\;\Varid{y})\;\Varid{z}\to \Varid{return}\mathbin{\$}\Conid{KBRight}\;(\Conid{KBP}\;\Varid{y}\;\Varid{z}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{bk}\mathrel{=}\Conid{Kleisli}\mathbin{\$}\lambda \Varid{e}\to \mathbf{case}\;\Varid{e}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{16}{}\<[21]%
+\>[21]{}\Conid{KBLeft}\;(\Conid{KBP}\;\Varid{x}\;\Varid{z}){}\<[39]%
+\>[39]{}\to \Varid{return}\mathbin{\$}\Conid{KBP}\;(\Conid{KBLeft}\;\Varid{x})\;\Varid{z}{}\<[E]%
+\\
+\>[5]{}\hsindent{16}{}\<[21]%
+\>[21]{}\Conid{KBRight}\;(\Conid{KBP}\;\Varid{y}\;\Varid{z})\to \Varid{return}\mathbin{\$}\Conid{KBP}\;(\Conid{KBRight}\;\Varid{y})\;\Varid{z}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mathbf{instance}\;(\Conid{Monad}\;\Varid{m})\Rightarrow \Conid{Semiring}\;(\Conid{KBiject}\;\Varid{m})\;{}\<[45]%
+\>[45]{}\Conid{KBSum}\;\Conid{KBZero}\;\Conid{KBProduct}\;\Conid{KBOne}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+
+
+\end{document}

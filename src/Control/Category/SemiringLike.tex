@@ -1,0 +1,399 @@
+\documentclass{article}
+\usepackage{hyperref}
+%% ODER: format ==         = "\mathrel{==}"
+%% ODER: format /=         = "\neq "
+%
+%
+\makeatletter
+\@ifundefined{lhs2tex.lhs2tex.sty.read}%
+  {\@namedef{lhs2tex.lhs2tex.sty.read}{}%
+   \newcommand\SkipToFmtEnd{}%
+   \newcommand\EndFmtInput{}%
+   \long\def\SkipToFmtEnd#1\EndFmtInput{}%
+  }\SkipToFmtEnd
+
+\newcommand\ReadOnlyOnce[1]{\@ifundefined{#1}{\@namedef{#1}{}}\SkipToFmtEnd}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\DeclareFontFamily{OT1}{cmtex}{}
+\DeclareFontShape{OT1}{cmtex}{m}{n}
+  {<5><6><7><8>cmtex8
+   <9>cmtex9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmtex10}{}
+\DeclareFontShape{OT1}{cmtex}{m}{it}
+  {<-> ssub * cmtt/m/it}{}
+\newcommand{\texfamily}{\fontfamily{cmtex}\selectfont}
+\DeclareFontShape{OT1}{cmtt}{bx}{n}
+  {<5><6><7><8>cmtt8
+   <9>cmbtt9
+   <10><10.95><12><14.4><17.28><20.74><24.88>cmbtt10}{}
+\DeclareFontShape{OT1}{cmtex}{bx}{n}
+  {<-> ssub * cmtt/bx/n}{}
+\newcommand{\tex}[1]{\text{\texfamily#1}}	% NEU
+
+\newcommand{\Sp}{\hskip.33334em\relax}
+
+
+\newcommand{\Conid}[1]{\mathit{#1}}
+\newcommand{\Varid}[1]{\mathit{#1}}
+\newcommand{\anonymous}{\kern0.06em \vbox{\hrule\@width.5em}}
+\newcommand{\plus}{\mathbin{+\!\!\!+}}
+\newcommand{\bind}{\mathbin{>\!\!\!>\mkern-6.7mu=}}
+\newcommand{\rbind}{\mathbin{=\mkern-6.7mu<\!\!\!<}}% suggested by Neil Mitchell
+\newcommand{\sequ}{\mathbin{>\!\!\!>}}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\usepackage{polytable}
+
+%mathindent has to be defined
+\@ifundefined{mathindent}%
+  {\newdimen\mathindent\mathindent\leftmargini}%
+  {}%
+
+\def\resethooks{%
+  \global\let\SaveRestoreHook\empty
+  \global\let\ColumnHook\empty}
+\newcommand*{\savecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\savecolumns[#1]}}
+\newcommand*{\restorecolumns}[1][default]%
+  {\g@addto@macro\SaveRestoreHook{\restorecolumns[#1]}}
+\newcommand*{\aligncolumn}[2]%
+  {\g@addto@macro\ColumnHook{\column{#1}{#2}}}
+
+\resethooks
+
+\newcommand{\onelinecommentchars}{\quad-{}- }
+\newcommand{\commentbeginchars}{\enskip\{-}
+\newcommand{\commentendchars}{-\}\enskip}
+
+\newcommand{\visiblecomments}{%
+  \let\onelinecomment=\onelinecommentchars
+  \let\commentbegin=\commentbeginchars
+  \let\commentend=\commentendchars}
+
+\newcommand{\invisiblecomments}{%
+  \let\onelinecomment=\empty
+  \let\commentbegin=\empty
+  \let\commentend=\empty}
+
+\visiblecomments
+
+\newlength{\blanklineskip}
+\setlength{\blanklineskip}{0.66084ex}
+
+\newcommand{\hsindent}[1]{\quad}% default is fixed indentation
+\let\hspre\empty
+\let\hspost\empty
+\newcommand{\NB}{\textbf{NB}}
+\newcommand{\Todo}[1]{$\langle$\textbf{To do:}~#1$\rangle$}
+
+\EndFmtInput
+\makeatother
+%
+%
+%
+%
+%
+%
+% This package provides two environments suitable to take the place
+% of hscode, called "plainhscode" and "arrayhscode". 
+%
+% The plain environment surrounds each code block by vertical space,
+% and it uses \abovedisplayskip and \belowdisplayskip to get spacing
+% similar to formulas. Note that if these dimensions are changed,
+% the spacing around displayed math formulas changes as well.
+% All code is indented using \leftskip.
+%
+% Changed 19.08.2004 to reflect changes in colorcode. Should work with
+% CodeGroup.sty.
+%
+\ReadOnlyOnce{polycode.fmt}%
+\makeatletter
+
+\newcommand{\hsnewpar}[1]%
+  {{\parskip=0pt\parindent=0pt\par\vskip #1\noindent}}
+
+% can be used, for instance, to redefine the code size, by setting the
+% command to \small or something alike
+\newcommand{\hscodestyle}{}
+
+% The command \sethscode can be used to switch the code formatting
+% behaviour by mapping the hscode environment in the subst directive
+% to a new LaTeX environment.
+
+\newcommand{\sethscode}[1]%
+  {\expandafter\let\expandafter\hscode\csname #1\endcsname
+   \expandafter\let\expandafter\endhscode\csname end#1\endcsname}
+
+% "compatibility" mode restores the non-polycode.fmt layout.
+
+\newenvironment{compathscode}%
+  {\par\noindent
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed\)%
+   \par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\compaths}{\sethscode{compathscode}}
+
+% "plain" mode is the proposed default.
+% It should now work with \centering.
+% This required some changes. The old version
+% is still available for reference as oldplainhscode.
+
+\newenvironment{plainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\hspre\(\let\hspost\)%
+   \pboxed}%
+  {\endpboxed%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newenvironment{oldplainhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+% Here, we make plainhscode the default environment.
+
+\newcommand{\plainhs}{\sethscode{plainhscode}}
+\newcommand{\oldplainhs}{\sethscode{oldplainhscode}}
+\plainhs
+
+% The arrayhscode is like plain, but makes use of polytable's
+% parray environment which disallows page breaks in code blocks.
+
+\newenvironment{arrayhscode}%
+  {\hsnewpar\abovedisplayskip
+   \advance\leftskip\mathindent
+   \hscodestyle
+   \let\\=\@normalcr
+   \(\parray}%
+  {\endparray\)%
+   \hsnewpar\belowdisplayskip
+   \ignorespacesafterend}
+
+\newcommand{\arrayhs}{\sethscode{arrayhscode}}
+
+% The mathhscode environment also makes use of polytable's parray 
+% environment. It is supposed to be used only inside math mode 
+% (I used it to typeset the type rules in my thesis).
+
+\newenvironment{mathhscode}%
+  {\parray}{\endparray}
+
+\newcommand{\mathhs}{\sethscode{mathhscode}}
+
+% texths is similar to mathhs, but works in text mode.
+
+\newenvironment{texthscode}%
+  {\(\parray}{\endparray\)}
+
+\newcommand{\texths}{\sethscode{texthscode}}
+
+% The framed environment places code in a framed box.
+
+\def\codeframewidth{\arrayrulewidth}
+\RequirePackage{calc}
+
+\newenvironment{framedhscode}%
+  {\parskip=\abovedisplayskip\par\noindent
+   \hscodestyle
+   \arrayrulewidth=\codeframewidth
+   \tabular{@{}|p{\linewidth-2\arraycolsep-2\arrayrulewidth-2pt}|@{}}%
+   \hline\framedhslinecorrect\\{-1.5ex}%
+   \let\endoflinesave=\\
+   \let\\=\@normalcr
+   \(\pboxed}%
+  {\endpboxed\)%
+   \framedhslinecorrect\endoflinesave{.5ex}\hline
+   \endtabular
+   \parskip=\belowdisplayskip\par\noindent
+   \ignorespacesafterend}
+
+\newcommand{\framedhslinecorrect}[2]%
+  {#1[#2]}
+
+\newcommand{\framedhs}{\sethscode{framedhscode}}
+
+% The inlinehscode environment is an experimental environment
+% that can be used to typeset displayed code inline.
+
+\newenvironment{inlinehscode}%
+  {\(\def\column##1##2{}%
+   \let\>\undefined\let\<\undefined\let\\\undefined
+   \newcommand\>[1][]{}\newcommand\<[1][]{}\newcommand\\[1][]{}%
+   \def\fromto##1##2##3{##3}%
+   \def\nextline{}}{\) }%
+
+\newcommand{\inlinehs}{\sethscode{inlinehscode}}
+
+% The joincode environment is a separate environment that
+% can be used to surround and thereby connect multiple code
+% blocks.
+
+\newenvironment{joincode}%
+  {\let\orighscode=\hscode
+   \let\origendhscode=\endhscode
+   \def\endhscode{\def\hscode{\endgroup\def\@currenvir{hscode}\\}\begingroup}
+   %\let\SaveRestoreHook=\empty
+   %\let\ColumnHook=\empty
+   %\let\resethooks=\empty
+   \orighscode\def\hscode{\endgroup\def\@currenvir{hscode}}}%
+  {\origendhscode
+   \global\let\hscode=\orighscode
+   \global\let\endhscode=\origendhscode}%
+
+\makeatother
+\EndFmtInput
+%
+\begin{document}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mbox{\enskip\{-\# LANGUAGE MultiParamTypeClasses, FunctionalDependencies  \#-\}\enskip}{}\<[E]%
+\\
+\>[B]{}\mathbf{module}\;\Conid{\Conid{Data}.SemiringLike}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{Prelude}\;\Varid{hiding}\;((\mathbin{\circ}),\Varid{id}){}\<[E]%
+\\
+\>[B]{}\mathbf{import}\;\Conid{\Conid{Control}.Category}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Building a better Arrow
+
+The great thing about Arrows is you can write code that works for morphisms in different categories. What this means is that you can write code for functions and later use monad actions with the same code. This is useful for error handling, and of course IO.
+
+If the underlying category only uses isomorphisms (things with inverses) then it is called a groupoid. Groupoids cause cracks to show in the Arrow abstraction. Arrows assume that you can lift any function into the category you are writing code for, through the arr function. This is out for groupoids, because not all functions are isomorphisms. 
+
+To remedy this, among other issues, Adam Megacz came up with. \href{''http://arxiv.org/pdf/1007.2885v2.pdf ''}{''Generalized Arrows.''}. 
+
+In \href{''https://www.cs.indiana.edu/~rpjames/papers/rc.pdf''}{''Dagger Traced Symmetric Monoidal Categories and Reversible Programming''} the authors show how to construct an reversible language out of the sum and product types along with related combinators to form a commutative semiring, at the type level. 
+
+Both approaches are similar, and in fact overlap with less elegant solutions I had stumbled upon myself. 
+
+I want error handling and partial isomorphisms, which is what generic arrows give me. I find the algebraic approach more instructive. So I am going to try to get the same combinators as DTSMCRP but for an arbitrary category in general. 
+
+I start with an umbrella term for both add and multiply.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mbox{\onelinecomment  combine two morphisms into one.  }{}\<[E]%
+\\
+\>[B]{}\mathbf{class}\;(\Conid{Category}\;\Varid{cat})\Rightarrow \Conid{BinaryEndofunctor}\;\Varid{cat}\;\Varid{op}\mid \Varid{op}\to \Varid{cat}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\hsindent{5}{}\<[5]%
+\>[5]{}\Varid{selfmap}\mathbin{::}\Varid{cat}\;\Varid{a}\;\Varid{b}\to \Varid{cat}\;\Varid{c}\;\Varid{d}\to \Varid{iso}\;(\Varid{op}\;\Varid{a}\;\Varid{c})\;(\Varid{op}\;\Varid{b}\;\Varid{d}){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+An endofunctor takes a morphism from a category the same category. Functor is actually an endofunctor for the category Hask. 
+
+I now write the following pretty general functions.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{promote}\mathbin{::}(\Conid{Category}\;\Varid{cat},\Conid{BinaryEndofunctor}\;\Varid{cat}\;\Varid{op})\Rightarrow \Varid{cat}\;\Varid{a}\;\Varid{b}\to \Varid{cat}\;(\Varid{op}\;\Varid{a}\;\Varid{c})\;(\Varid{op}\;\Varid{b}\;\Varid{c}){}\<[E]%
+\\
+\>[B]{}\Varid{promote}\mathrel{=}(\Varid{flip}\;\Varid{selfmap})\;\Varid{id}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{swap\char95 promote}\mathbin{::}(\Conid{Category}\;\Varid{cat},\Conid{BinaryEndofunctor}\;\Varid{cat}\;\Varid{op})\Rightarrow \Varid{cat}\;\Varid{a}\;\Varid{b}\to \Varid{cat}\;(\Varid{op}\;\Varid{c}\;\Varid{a})\;(\Varid{op}\;\Varid{c}\;\Varid{b}){}\<[E]%
+\\
+\>[B]{}\Varid{swap\char95 promote}\mathrel{=}\Varid{selfmap}\;\Varid{id}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+It is probably not clear at this point but depending on the operation we can get either the Arrow *** or the ArrowChoice |\ensuremath{\Varid{function}\mathbin{\circ}\Conid{If}\;\Varid{we}\;\Varid{make}\;\Varid{a}\;\Varid{semiring}\;\Varid{we}\;\Varid{can}\;\Varid{get}\;\Varid{them}\;\Varid{both}\mathbin{\circ}\Conid{That's}\;\Varid{what}\;\Varid{we}\;\Varid{are}\;\Varid{going}\;\Varid{to}\;\mathbf{do}\mathbin{\circ}\Conid{Now}\;\Conid{I}\;\Varid{can}\;\Varid{make}\;\Varid{the}\;\mathbf{type}\;\Varid{classes}\;\Varid{to}\;\Varid{encode}\;\Varid{the}\;\Varid{algebraic}\;\Varid{laws}\;\mathbf{of}\;\Varid{semirings}\mathbin{\circ}\Conid{I}\;\Varid{make}\;\Varid{a}\;\mathbf{class}\;\Varid{for}\;\Varid{each}\;\Varid{law}\mathbin{\circ}\lambda \Varid{begin}\;\{\mskip1.5mu \Varid{code}\mskip1.5mu\}\mbox{\onelinecomment  a + 0 = a class (Category cat, BinaryEndofunctor cat op) => Absorbs cat op id }} op -> cat, op -> id where
+    absorb   :: cat (op id a) a
+    unabsorb :: cat a (op id a)
+
+-- a + b = b + a
+class (Category cat, BinaryEndofunctor cat op) => Communative cat op \ensuremath{\Varid{op}\to \Varid{cat}\;\mathbf{where}\;\mbox{\onelinecomment also reflexive but an involution     commute  :: cat (op a b) (op b a)      -- (a + b) + c = a + (b + c)     class (Category cat, BinaryEndofunctor cat op) => Assocative cat op }} op -> cat where
+    assoc    :: cat (op (op a b) c) (op a (op b c)) 
+    unassoc  :: cat (op a (op b c)) (op (op a b) c)
+    
+-- 0 * x = 0    
+class (Category cat, BinaryEndofunctor cat op) => Annihilates cat op zero \ensuremath{\Varid{op}\;\Varid{zero}\to \Varid{cat}\;\mathbf{where}\;\Varid{annihilates}\mathbin{::}\Varid{cat}\;(\Varid{op}\;\Varid{zero}\;\Varid{a})\;\Varid{zero}\;\Varid{unannihilates}\mathbin{::}\Varid{cat}\;\Varid{zero}\;(\Varid{op}\;\Varid{zero}\;\Varid{a})\mbox{\onelinecomment  (a + b) * c = (a * c) + (b * c)     class (Category cat,         BinaryEndofunctor cat add,         BinaryEndofunctor cat multi) => Distributes cat add multi }} add multi -> cat where
+    distribute   :: cat (multi (add a b) c) (add (multi a c) (multi b c))    
+    undistribute :: cat (add (multi a c) (multi b c)) (multi (add a b) c)
+\end{code}
+
+Now I can collect these into groups of laws for different algebraic structures I care about.
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{8}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{50}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mbox{\onelinecomment Modoid has an operation }{}\<[E]%
+\\
+\>[B]{}\mathbf{class}\;(\Conid{Category}\;\Varid{cat},\Conid{BinaryEndofunctor}\;\Varid{cat}\;\Varid{dot},{}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{Assocative}\;\Varid{cat}\;\Varid{dot},\Conid{Absorbs}\;\Varid{cat}\;\Varid{dot}\;\Varid{id})\Rightarrow \Conid{Monoidial}\;\Varid{cat}\;\Varid{dot}\;\Varid{id}\mid \Varid{dot}\;\Varid{id}\to \Varid{cat}\;\mathbf{where}{}\<[E]%
+\\
+\>[B]{}\mathbf{class}\;(\Conid{Monoidial}\;\Varid{cat}\;\Varid{op}\;\Varid{id},\Conid{Communative}\;\Varid{cat}\;\Varid{op}){}\<[50]%
+\>[50]{}\Rightarrow \Conid{CommunativeMonoidial}\;\Varid{cat}\;\Varid{op}\;\Varid{id}\;\mathbf{where}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mbox{\onelinecomment not sure what to call this        }{}\<[E]%
+\\
+\>[B]{}\mathbf{class}\;(\Conid{CommunativeMonoidial}\;\Varid{cat}\;\Varid{add}\;\Varid{zero},{}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{CommunativeMonoidial}\;\Varid{cat}\;\Varid{multi}\;\Varid{one},{}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{Annihilates}\;\Varid{cat}\;\Varid{multi}\;\Varid{zero},\Conid{Distributes}\;\Varid{cat}\;\Varid{add}\;\Varid{multi})\Rightarrow {}\<[E]%
+\\
+\>[B]{}\hsindent{8}{}\<[8]%
+\>[8]{}\Conid{SemiringLike}\;\Varid{cat}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\mid \Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\to \Varid{cat}\;\mathbf{where}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+From which I regain Arrow functionality by having the op be (,) or the Either. 
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{first}\mathbin{::}\Conid{SemiringLike}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{multi}\;\Varid{b}\;\Varid{d})\;(\Varid{multi}\;\Varid{c}\;\Varid{d}){}\<[E]%
+\\
+\>[B]{}\Varid{first}\mathrel{=}\Varid{promote}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{second}\mathbin{::}\Conid{SemiringLike}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{multi}\;\Varid{d}\;\Varid{b})\;(\Varid{multi}\;\Varid{d}\;\Varid{c}){}\<[E]%
+\\
+\>[B]{}\Varid{second}\mathrel{=}\Varid{swap\char95 promote}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{left}\mathbin{::}\Conid{SemiringLike}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{add}\;\Varid{b}\;\Varid{d})\;(\Varid{add}\;\Varid{c}\;\Varid{d}){}\<[E]%
+\\
+\>[B]{}\Varid{left}\mathrel{=}\Varid{promote}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{right}\mathbin{::}\Conid{SemiringLike}\;\Varid{a}\;\Varid{add}\;\Varid{zero}\;\Varid{multi}\;\Varid{one}\Rightarrow \Varid{a}\;\Varid{b}\;\Varid{c}\to \Varid{a}\;(\Varid{add}\;\Varid{d}\;\Varid{b})\;(\Varid{add}\;\Varid{d}\;\Varid{c}){}\<[E]%
+\\
+\>[B]{}\Varid{right}\mathrel{=}\Varid{swap\char95 promote}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Many of the Generic Arrow functions can be regained through absorption (cancel, uncancel) and commutativity (swap).
+
+This also makes clear the relationship between Arrow and ArrowChoice as has been noted else where. Basically the same thing with a different endofunctor (Arrow uses product types, choice uses sum types) for the monoid operator of communative monoid. 
+
+
+I'll create instances for the types in another post, assuming it is possible :).
+
+\end{document}
