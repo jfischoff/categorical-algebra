@@ -10,10 +10,10 @@ Name:                categorical-algebra
 Version:             0.0.0.1
 
 -- A short (one-line) description of the package.
-Synopsis:            CCategorical Monoids and Semirings
+Synopsis:            Categorical Monoids and Semirings
 
 -- A longer description of the package.
--- Description:         
+Description: This my attempt at synthesizing a few ideas about invertible programming with Arrow like type classes. Here is a link to pdf produced from the source <https://takeittothelimit.files.wordpress.com/2012/03/semiring.pdf> And here is a blog post that says basically the same thing. <http://takeittothelimit.wordpress.com/2012/03/26/categorical-semirings-2/>
 
 -- The license under which the package is released.
 License:             BSD3
@@ -44,15 +44,19 @@ Cabal-version:       >=1.2
 
 
 Library
+  Hs-Source-Dirs: src
   -- Modules exported by the library.
-  Exposed-modules:     Control.Category.Semiring, Main
+  Exposed-modules:     Data.Semiring
   
   -- Packages needed in order to build this package.
-  -- Build-depends:       
+  Build-depends:  base > 4.0.0 && <= 5.0,    
+                  newtype >= 0.2,
+                  pointless-haskell >= 0.0.8,
+                  void >= 0.5.5
+
+  GHC-options:       -Wall
   
   -- Modules not exported by this package.
   -- Other-modules:       
   
-  -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
-  -- Build-tools:         
   

@@ -1,10 +1,10 @@
 \BOOKMARK [1][-]{section.1}{Small Category Instances}{}% 1
 \BOOKMARK [2][-]{subsection.1.1}{Function Instances}{section.1}% 2
-\BOOKMARK [3][-]{subsubsection.1.1.1}{Sum Communative Monoid Instances}{subsection.1.1}% 3
+\BOOKMARK [3][-]{subsubsection.1.1.1}{Sum Commutative Monoid Instances}{subsection.1.1}% 3
 \BOOKMARK [3][-]{subsubsection.1.1.2}{Product Commutative Monoid Instances}{subsection.1.1}% 4
 \BOOKMARK [3][-]{subsubsection.1.1.3}{Function Semiring Instance}{subsection.1.1}% 5
 \BOOKMARK [2][-]{subsection.1.2}{Kleisli Instances}{section.1}% 6
-\BOOKMARK [2][-]{subsection.1.3}{Sum Communative Monoid Instances}{section.1}% 7
+\BOOKMARK [2][-]{subsection.1.3}{Sum Commutative Monoid Instances}{section.1}% 7
 \BOOKMARK [3][-]{subsubsection.1.3.1}{Product Commutative Monoid Instances}{subsection.1.3}% 8
 \BOOKMARK [3][-]{subsubsection.1.3.2}{Function Semiring Instance}{subsection.1.3}% 9
 \BOOKMARK [1][-]{section.2}{Groupoid Class}{}% 10
@@ -12,10 +12,10 @@
 \BOOKMARK [2][-]{subsection.3.1}{Helper Code}{section.3}% 12
 \BOOKMARK [2][-]{subsection.3.2}{Groupoid Semirings Instances}{section.3}% 13
 \BOOKMARK [2][-]{subsection.3.3}{Groupoid with a Function as the base category}{section.3}% 14
-\BOOKMARK [3][-]{subsubsection.3.3.1}{Sum Communative Monoid Instances}{subsection.3.3}% 15
-\BOOKMARK [3][-]{subsubsection.3.3.2}{Product Communative Monoid Instances}{subsection.3.3}% 16
+\BOOKMARK [3][-]{subsubsection.3.3.1}{Sum Commutative Monoid Instances}{subsection.3.3}% 15
+\BOOKMARK [3][-]{subsubsection.3.3.2}{Product Commutative Monoid Instances}{subsection.3.3}% 16
 \BOOKMARK [3][-]{subsubsection.3.3.3}{Semiring Instance}{subsection.3.3}% 17
 \BOOKMARK [2][-]{subsection.3.4}{Groupoid with a Klesli arrow as the base category}{section.3}% 18
-\BOOKMARK [3][-]{subsubsection.3.4.1}{Sum Communative Monoid Instances}{subsection.3.4}% 19
-\BOOKMARK [3][-]{subsubsection.3.4.2}{Product Communative Monoid Instances}{subsection.3.4}% 20
+\BOOKMARK [3][-]{subsubsection.3.4.1}{Sum Commutative Monoid Instances}{subsection.3.4}% 19
+\BOOKMARK [3][-]{subsubsection.3.4.2}{Product Commutative Monoid Instances}{subsection.3.4}% 20
 \BOOKMARK [3][-]{subsubsection.3.4.3}{Semiring Instance}{subsection.3.4}% 21
